@@ -2,8 +2,11 @@ import json
 import re
 from PyPDF2 import PdfFileReader, PdfFileWriter
 import slate3k as slate
-import argparse
 import sys
+from io import BytesIO
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+
 
 with open("description.json") as fd:
     description = json.load(fd)
@@ -75,6 +78,29 @@ class Order:
 
         return single_key
 
+    def get_invoice(self,value):
+        buffer = BytesIO()
+
+        # create a new PDF with Reportlab
+        p = canvas.Canvas(buffer, pagesize=A4)
+        p.drawString(80, 0, value)
+        p.showPage()
+        p.save()
+
+        # move to the beginning of the StringIO buffer
+        buffer.seek(0)
+        newPdf = PdfFileReader(buffer)
+
+        #######DEBUG NEW PDF created#############
+        pdf1 = buffer.getvalue()
+        open('pdf1.pdf', 'wb').write(pdf1)
+        #########################################
+
+        self.invoice.mergePage(newPdf.getPage(0))
+
+        return self.invoice
+
+
 
 if __name__ == '__main__':
     # parser = argparse.ArgumentParser(description='Filter amazon pay slip')
@@ -122,9 +148,10 @@ if __name__ == '__main__':
 
         pdf_writer = PdfFileWriter()
         order: Order
-        for order in filter_result[key]:
+        for index , order in enumerate(filter_result[key]):
             pdf_writer.addPage(order.seller_address)
-            pdf_writer.addPage(order.invoice)
+            # pdf_writer.addPage(order.invoice)
+            pdf_writer.addPage(order.get_invoice("Order no: {}".format(index + 1 )))
 
         with open(file_name, 'wb') as out:
             pdf_writer.write(out)
