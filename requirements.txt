@@ -1,0 +1,2 @@
+slate3k
+PyPDF2

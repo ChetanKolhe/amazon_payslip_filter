@@ -2,6 +2,8 @@ import json
 import re
 from PyPDF2 import PdfFileReader, PdfFileWriter
 import slate3k as slate
+import argparse
+import sys
 
 with open("description.json") as fd:
     description = json.load(fd)
@@ -75,11 +77,14 @@ class Order:
 
 
 if __name__ == '__main__':
+    # parser = argparse.ArgumentParser(description='Filter amazon pay slip')
+    file_name = sys.argv[1]
+    # print("This file name :",file_name)
 
-    pdf_file = open("examle.pdf", mode="rb")
+    pdf_file = open(file_name, mode="rb")
     pdf = PdfFileReader(pdf_file)
 
-    with open("examle.pdf", 'rb') as f:
+    with open(file_name, 'rb') as f:
         extracted_text = slate.PDF(f)
 
     list_order = []
