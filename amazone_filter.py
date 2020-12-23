@@ -1,8 +1,8 @@
 import json
 import re
-from PyPDF2 import PdfFileReader, PdfFileWriter
+import PyPDF2
 import slate3k as slate
-import sys
+import argparse
 from io import BytesIO
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
@@ -78,18 +78,24 @@ class Order:
 
         return single_key
 
-    def get_invoice(self,value):
+    def get_invoice(self, value):
         buffer = BytesIO()
+
+        page_description = f"{value}  ("
+        for key in self.quantity:
+            page_description = page_description + f"{description[key]['ShortDescription']}={self.quantity[key]},"
+
+        page_description = page_description + ")"
 
         # create a new PDF with Reportlab
         p = canvas.Canvas(buffer, pagesize=A4)
-        p.drawString(80, 0, value)
+        p.drawString(0, 2, page_description)
         p.showPage()
         p.save()
 
         # move to the beginning of the StringIO buffer
         buffer.seek(0)
-        newPdf = PdfFileReader(buffer)
+        newPdf = PyPDF2.PdfFileReader(buffer)
 
         #######DEBUG NEW PDF created#############
         pdf1 = buffer.getvalue()
@@ -100,15 +106,68 @@ class Order:
 
         return self.invoice
 
+    def get_shipping(self, value):
+        buffer = BytesIO()
 
+        page_description = f"{value}  ("
+        for key in self.quantity:
+            page_description = page_description + f"{description[key]['ShortDescription']}={self.quantity[key]}, "
+
+        page_description = page_description + ")"
+
+        # create a new PDF with Reportlab
+        p = canvas.Canvas(buffer, pagesize=A4)
+        p.drawString(0, 2, page_description)
+        p.showPage()
+        p.save()
+
+        # move to the beginning of the StringIO buffer
+        buffer.seek(0)
+        newPdf = PyPDF2.PdfFileReader(buffer)
+
+        #######DEBUG NEW PDF created#############
+        pdf1 = buffer.getvalue()
+        open('pdf1.pdf', 'wb').write(pdf1)
+        #########################################
+
+        self.seller_address.mergePage(newPdf.getPage(0))
+
+        return self.seller_address
+
+    @staticmethod
+    def write_pdf_files(list_of_order: list, pdf_file_name, include_invoice=True, include_address=True):
+        pdf_writer = PyPDF2.PdfFileWriter()
+        order: Order
+        for index, order in enumerate(list_of_order):
+            # pdf_writer.addPage(order.seller_address)
+            # pdf_writer.addPage(order.invoice)
+            if include_address:
+                pdf_writer.addPage(order.get_shipping("Order no: {}".format(index + 1)))
+
+            if include_invoice:
+                pdf_writer.addPage(order.get_invoice("Order no: {}".format(index + 1)))
+        with open(pdf_file_name, 'wb') as out:
+            pdf_writer.write(out)
+        print('Created: {}'.format(pdf_file_name))
 
 if __name__ == '__main__':
-    # parser = argparse.ArgumentParser(description='Filter amazon pay slip')
-    file_name = sys.argv[1]
+    parser = argparse.ArgumentParser(description='Filter amazon pay slip')
+    parser.add_argument("file_name",
+                        help="Enter amazon file name")
+
+    parser.add_argument("-f", "--filter",
+                        help="Separate invoice and address")
+
+    # file_name = sys.argv[1]
+    # file_name = "examle.pdf"
+    args = parser.parse_args()
+    file_name = args.file_name
+    separate = True if args.filter.lower() == 'yes' else False
+
     # print("This file name :",file_name)
 
     pdf_file = open(file_name, mode="rb")
-    pdf = PdfFileReader(pdf_file)
+    pdf = PyPDF2.PdfFileReader(pdf_file)
 
     with open(file_name, 'rb') as f:
         extracted_text = slate.PDF(f)
@@ -146,15 +205,16 @@ if __name__ == '__main__':
         if key != "mix" and description[key].get("ShortDescription"):
             file_name = description[key].get("ShortDescription") + ".pdf"
 
-        pdf_writer = PdfFileWriter()
-        order: Order
-        for index , order in enumerate(filter_result[key]):
-            pdf_writer.addPage(order.seller_address)
-            # pdf_writer.addPage(order.invoice)
-            pdf_writer.addPage(order.get_invoice("Order no: {}".format(index + 1 )))
+        if separate:
+            Order.write_pdf_files(list_of_order=filter_result[key],
+                                  pdf_file_name=f"invoice_{file_name}",
+                                  include_address=False)
 
-        with open(file_name, 'wb') as out:
-            pdf_writer.write(out)
-        print('Created: {}'.format(file_name))
+            Order.write_pdf_files(list_of_order=filter_result[key],
+                                  pdf_file_name=f"address_{file_name}",
+                                  include_invoice=False)
+        else:
+            Order.write_pdf_files(list_of_order=filter_result[key],
+                                  pdf_file_name=f"{file_name}")
 
     pdf_file.close()
