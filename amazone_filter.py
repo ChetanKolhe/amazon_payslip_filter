@@ -156,7 +156,8 @@ if __name__ == '__main__':
                         help="Enter amazon file name")
 
     parser.add_argument("-f", "--filter",
-                        help="Separate invoice and address")
+                        help="Separate invoice and address",
+                        default="no")
 
     # file_name = sys.argv[1]
     # file_name = "examle.pdf"
