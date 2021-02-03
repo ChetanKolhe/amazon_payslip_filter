@@ -81,7 +81,7 @@ class Order:
         return single_key
 
     def get_invoice(self, value):
-        if not self.is_invoice_file_name_updated:
+        if self.is_invoice_file_name_updated:
             return self.invoice
 
         buffer = BytesIO()
@@ -113,7 +113,7 @@ class Order:
         return self.invoice
 
     def get_shipping(self, value):
-        if not self.is_address_file_name_updated:
+        if self.is_address_file_name_updated:
             return self.seller_address
 
         buffer = BytesIO()
