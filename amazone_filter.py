@@ -22,7 +22,8 @@ class Order:
         self.main_string = main_string
         self.quantity: dict = self.get_information(main_string=self.main_string)
         self.is_single_key = self.is_single()
-        self.is_file_name_updated = False
+        self.is_address_file_name_updated = False
+        self.is_invoice_file_name_updated = False
 
     def get_information(self, main_string):
         quantity_result = {}
@@ -80,6 +81,9 @@ class Order:
         return single_key
 
     def get_invoice(self, value):
+        if not self.is_invoice_file_name_updated:
+            return self.invoice
+
         buffer = BytesIO()
 
         page_description = f"{value}  ("
@@ -104,6 +108,7 @@ class Order:
         #########################################
 
         self.invoice.mergePage(newPdf.getPage(0))
+        self.is_invoice_file_name_updated = True
 
         return self.invoice
 
@@ -136,7 +141,7 @@ class Order:
 
         self.seller_address.mergePage(newPdf.getPage(0))
 
-        self.is_file_name_updated = True
+        self.is_address_file_name_updated = True
         return self.seller_address
 
     @staticmethod
