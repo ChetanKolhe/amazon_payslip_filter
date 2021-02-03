@@ -22,6 +22,7 @@ class Order:
         self.main_string = main_string
         self.quantity: dict = self.get_information(main_string=self.main_string)
         self.is_single_key = self.is_single()
+        self.is_file_name_updated = False
 
     def get_information(self, main_string):
         quantity_result = {}
@@ -141,11 +142,14 @@ class Order:
         for index, order in enumerate(list_of_order):
             # pdf_writer.addPage(order.seller_address)
             # pdf_writer.addPage(order.invoice)
-            if include_address:
-                pdf_writer.addPage(order.get_shipping("Order no: {}".format(index + 1)))
+            if not order.is_file_name_updated:
+                if include_address:
+                    pdf_writer.addPage(order.get_shipping("Order no: {}".format(index + 1)))
 
-            if include_invoice:
-                pdf_writer.addPage(order.get_invoice("Order no: {}".format(index + 1)))
+                if include_invoice:
+                    pdf_writer.addPage(order.get_invoice("Order no: {}".format(index + 1)))
+            order.is_file_name_updated = True
+
         with open(pdf_file_name, 'wb') as out:
             pdf_writer.write(out)
         print('Created: {}'.format(pdf_file_name))
