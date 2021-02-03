@@ -113,7 +113,7 @@ class Order:
         return self.invoice
 
     def get_shipping(self, value):
-        if not self.is_file_name_updated:
+        if not self.is_address_file_name_updated:
             return self.seller_address
 
         buffer = BytesIO()
