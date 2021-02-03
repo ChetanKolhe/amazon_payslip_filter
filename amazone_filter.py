@@ -156,7 +156,7 @@ if __name__ == '__main__':
                         help="Enter amazon file name")
 
     parser.add_argument("-f", "--filter",
-                        help="Separate invoice and address",
+                        help="Separate invoice and address yes/no",
                         default="no")
 
     # file_name = sys.argv[1]
@@ -217,5 +217,13 @@ if __name__ == '__main__':
         else:
             Order.write_pdf_files(list_of_order=filter_result[key],
                                   pdf_file_name=f"{file_name}")
+
+    # Write all files in single file
+    list_order_file = []
+    for key in filter_result:
+        list_order_file = list_order_file + filter_result[key]
+
+    Order.write_pdf_files(list_of_order=list_order_file,
+                          pdf_file_name="all_filter.pdf")
 
     pdf_file.close()
