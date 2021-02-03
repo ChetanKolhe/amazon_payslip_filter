@@ -108,6 +108,9 @@ class Order:
         return self.invoice
 
     def get_shipping(self, value):
+        if not self.is_file_name_updated:
+            return self.seller_address
+
         buffer = BytesIO()
 
         page_description = f"{value}  ("
@@ -133,6 +136,7 @@ class Order:
 
         self.seller_address.mergePage(newPdf.getPage(0))
 
+        self.is_file_name_updated = True
         return self.seller_address
 
     @staticmethod
@@ -142,12 +146,11 @@ class Order:
         for index, order in enumerate(list_of_order):
             # pdf_writer.addPage(order.seller_address)
             # pdf_writer.addPage(order.invoice)
-            if not order.is_file_name_updated:
-                if include_address:
-                    pdf_writer.addPage(order.get_shipping("Order no: {}".format(index + 1)))
+            if include_address:
+                pdf_writer.addPage(order.get_shipping("Order no: {}".format(index + 1)))
 
-                if include_invoice:
-                    pdf_writer.addPage(order.get_invoice("Order no: {}".format(index + 1)))
+            if include_invoice:
+                pdf_writer.addPage(order.get_invoice("Order no: {}".format(index + 1)))
             order.is_file_name_updated = True
 
         with open(pdf_file_name, 'wb') as out:
