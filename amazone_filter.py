@@ -41,7 +41,7 @@ class Order:
             demo = [(starter, asic) for asic in description_list for starter in starter_string]
             for starter, asic in demo:
                 value = str(
-                    serial_number) + starter + "[\w\.\W]{1,200}(₹\d*.\d\d\d*₹\d*.\d\d)?[^(₹\d*.\d\d\d*₹\d*.\d\d)]"
+                    serial_number) + starter + "[\w\.\W]{1,150}(₹\d*.\d\d\d*₹\d*.\d\d)?[^(₹\d*.\d\d\d*₹\d*.\d\d)]"
                 print(value)
 
                 result = re.search(value, remain_string)
@@ -59,7 +59,9 @@ class Order:
                 break
 
             remain_string = remain_string.split(current_description)[1].strip()
-            output = re.search(r"[\w\.\W]{1,30}(₹\d*.\d\d)(\d*)(₹\d*.\d\d)", remain_string)
+            output = re.search(r"[\w\.\W]{1,25}(₹\d*.\d\d)(\d*)(₹\d*.\d\d)", remain_string)
+            print(output.groups())
+            print(remain_string)
             print(f"Quantity  is {output.group(2)}")
             quantity_result[current_description] = output.group(2)
         return quantity_result
@@ -69,9 +71,11 @@ class Order:
             return False
 
         single_key = list(self.quantity.keys())
-        # print(single_key)
+        print(single_key)
         single_key = single_key[0]
 
+        print(single_key)
+        print(self.quantity)
         if int(self.quantity[single_key]) != 1:
             return False
 
