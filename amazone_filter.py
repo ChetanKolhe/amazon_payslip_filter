@@ -41,7 +41,7 @@ class Order:
             demo = [(starter, asic) for asic in description_list for starter in starter_string]
             for starter, asic in demo:
                 value = str(
-                    serial_number) + starter + "[\w\.\W]{1,150}(₹\d*.\d\d\d*₹\d*.\d\d)?[^(₹\d*.\d\d\d*₹\d*.\d\d)]"
+                    serial_number) + starter + "[\w\.\W]{1,200}(₹\d*.\d\d\d*₹\d*.\d\d)?[^(₹\d*.\d\d\d*₹\d*.\d\d)]"
                 print(value)
 
                 result = re.search(value, remain_string)
